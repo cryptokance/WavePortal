@@ -1,0 +1,25 @@
+.primaryButton {
+    cursor: pointer;
+    margin: 16px;
+    padding: 1em;
+    border: 0;
+    border-radius: 0px;
+    background-color: #9f86c0;
+    animation: 0.5s;
+
+}
+
+.primaryButton:hover {
+    background-color: #b7a0d4;
+    animation: 0.5s;
+    animation-duration: 2s;
+    transform: scale(0.99)
+}
+
+.secondaryButton {
+    cursor: pointer;
+    margin-top: 16px;
+    padding: 1em;
+    border: 0;
+    border-radius: 0px;
+}
