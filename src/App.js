@@ -1,20 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import abi from './utils/WavePortal.json';
 
 /**
  * Local Imports
  */
 import { Button } from './components';
+import abi from './utils/WavePortal.json';
 import './App.css';
 
 const App = () => {
-	const contractAddress = '0x4E6E999D5302B19347180Bd8E3613fF6b655bA7b';
+	const contractAddress = '0x56d36d11CaF188539DA867ac70F1cD9099d44608';
 	const contractABI = abi.abi;
 	const [
 		currentAccount,
 		setCurrentAccount
 	] = useState('');
+	/**
+	 * All state property to store all waves
+	 */
+	const [
+		allWaves,
+		setAllWaves
+	] = useState([]);
+
+	const getAllWaves = async () => {
+		try {
+			const { ethereum } = window;
+
+			if (ethereum) {
+				const provider = new ethers.providers.Web3Provider(ethereum);
+				const signer = provider.getSigner();
+				const wavePortalContract = new ethers.Contract(contractAddress, contractABI, signer);
+				const waves = await wavePortalContract.getAllWaves();
+				let cleanedWaves = [];
+
+				waves.forEach((wave) => {
+					cleanedWaves.push({
+						address   : wave.waver,
+						timestamp : new Date(wave.timestamp * 1000),
+						message   : wave.message
+					});
+				});
+				console.log(waves);
+				setAllWaves(cleanedWaves);
+			}
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
 	const checkIfWalletIsConnected = async () => {
 		/*
@@ -36,6 +69,7 @@ const App = () => {
 				const account = accounts[0];
 				console.log('Founded an authorized account', account);
 				setCurrentAccount(account);
+				await getAllWaves();
 			} else {
 				console.log('No authorized account');
 			}
@@ -62,9 +96,10 @@ const App = () => {
         * Execute the actual wave from your smart contract
         */
 
-				const waveTxn = await wavePortalContract.wave();
+				const waveTxn = await wavePortalContract.wave('this is a message');
 				console.log('Mining...', waveTxn.hash);
 				await waveTxn.wait();
+				await getAllWaves();
 				console.log('Mined -- ', waveTxn.hash);
 				count = await wavePortalContract.getTotalWaves();
 				console.log('Retrieved total wave count...', count.toNumber());
@@ -109,6 +144,16 @@ const App = () => {
 						Connect Wallet
 					</Button>
 				)}
+
+				{allWaves.map((wave, index) => {
+					return (
+						<div key={index} style={{ backgroundColor: 'OldLace', marginTop: '16px', padding: '8px' }}>
+							<div>Address: {wave.address}</div>
+							<div>Time: {wave.timestamp.toString()}</div>
+							<div>Message: {wave.message}</div>
+						</div>
+					);
+				})}
 			</div>
 		</div>
 	);
